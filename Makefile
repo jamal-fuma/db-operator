@@ -52,13 +52,18 @@ deploy:
 
 update: build deploy
 
-test:
+it-failed:
 	@docker run --rm --name postgres -e POSTGRES_PASSWORD=test1234 -p 5432:5432 -d postgres:11-alpine
 	@docker run --rm --name mysql -e MYSQL_ROOT_PASSWORD=test1234 -p 3306:3306 -d mysql:5.7
 	@sleep 2
-	@go test -tags tests ./... -v -cover
+	@touch it-failed
+
+test:
+	$(MAKE) it-failed
+	go test -tags tests ./... -v -cover > it-failed
 	@docker stop postgres
 	@docker stop mysql
+	@rm it-failed
 
 lint:
 	@golint ./...
