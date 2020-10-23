@@ -67,6 +67,12 @@ func buildJobTemplate(dbcr *kciv1alpha1.Database) (batchv1beta1.JobTemplateSpec,
 		return batchv1beta1.JobTemplateSpec{}, err
 	}
 
+	securityContext, err := getSecurityContext(dbcr)
+	if err != nil {
+		logrus.Errorf("can not build job template - %s", err)
+		return batchv1beta1.JobTemplateSpec{}, err
+	}
+
 	var backupContainer v1.Container
 
 	engine := instance.Spec.Engine
@@ -102,6 +108,7 @@ func buildJobTemplate(dbcr *kciv1alpha1.Database) (batchv1beta1.JobTemplateSpec,
 					ServiceAccountName: account,
 					RestartPolicy:      v1.RestartPolicyNever,
 					Volumes:            volumes(dbcr),
+					SecurityContext:    securityContext,
 				},
 			},
 		},
