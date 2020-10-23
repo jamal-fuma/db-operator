@@ -7,6 +7,7 @@ import (
 
 	kciv1alpha1 "github.com/kloeckner-i/db-operator/pkg/apis/kci/v1alpha1"
 	"github.com/kloeckner-i/db-operator/pkg/config"
+	v1 "k8s.io/api/core/v1"
 
 	"github.com/stretchr/testify/assert"
 )
