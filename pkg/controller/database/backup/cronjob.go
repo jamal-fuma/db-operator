@@ -320,3 +320,43 @@ func getServiceAccountName(dbcr *kciv1alpha1.Database) (string, error) {
 		return account, errors.New("unknown backend type")
 	}
 }
+
+func getSecurityContext(dbcr *kciv1alpha1.Database) (*v1.PodSecurityContext, error) {
+	backend, err := dbcr.GetBackendType()
+	if err != nil {
+		return nil, err
+	}
+
+	switch backend {
+	case "generic":
+		return nil, nil
+	case "google":
+		return nil, nil
+	case "amazon":
+		return getAmazonInstanceSecurityContext(dbcr)
+	default:
+		return nil, errors.New("unknown backend type")
+	}
+}
+
+func getAmazonInstanceSecurityContext(dbcr *kciv1alpha1.Database) (*v1.PodSecurityContext, error) {
+
+	instance, err := dbcr.GetInstanceRef()
+	if err != nil {
+		return nil, err
+	}
+
+	instanceFSGroup := (int64)(instance.Spec.Amazon.FSGroup)
+	instanceSecurityContext := v1.PodSecurityContext{FSGroup: &instanceFSGroup}
+	if instanceFSGroup != -1 {
+		return &instanceSecurityContext, nil
+	}
+
+	configFSGroup := (int64)(conf.Instances.Amazon.FSGroup)
+	configSecurityContext := v1.PodSecurityContext{FSGroup: &configFSGroup}
+	if configFSGroup != -1 {
+		return &configSecurityContext, nil
+	}
+
+	return nil, nil
+}

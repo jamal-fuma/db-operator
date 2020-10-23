@@ -83,6 +83,35 @@ func TestGCSBackupCronGeneric(t *testing.T) {
 	assert.Equal(t, "* * * * *", funcCronObject.Spec.Schedule)
 }
 
+func checkSecurityContextFSGroupEqualValue(fsGroup int64, context *v1.PodSecurityContext, t *testing.T) {
+	if -1 == fsGroup {
+		checkSecurityContextFSGroupNil(context, t)
+	} else {
+		checkSecurityContextFSGroupEqual(&fsGroup, context, t)
+	}
+}
+
+func checkSecurityContextFSGroupEqual(valref *int64, context *v1.PodSecurityContext, t *testing.T) {
+	if nil == valref {
+		checkSecurityContextFSGroupNil(context, t)
+	} else {
+		assert.NotNil(t, context, "SecurityContext is nil")
+		if nil != context {
+			assert.NotNil(t, context.FSGroup, "SecurityContext.FSGroup is Nil")
+			if nil != context.FSGroup {
+				assert.Equal(t, *valref, *context.FSGroup, "SecurityContext.FSGroup == ")
+			}
+		}
+	}
+}
+
+func checkSecurityContextFSGroupNil(context *v1.PodSecurityContext, t *testing.T) {
+	assert.Equal(t, (*v1.PodSecurityContext)(nil), context, "SecurityContext should be nil")
+	if nil != context {
+		assert.Equal(t, (*int64)(nil), context.FSGroup, "SecurityContext.FSGroup should be Nil")
+	}
+}
+
 func TestGCSBackupCronAmazonServiceAccountFromConfig(t *testing.T) {
 	dbcr := &kciv1alpha1.Database{}
 	dbcr.Namespace = "TestNS"
