@@ -21,6 +21,7 @@ type googleInstanceConfig struct {
 
 type amazonInstanceConfig struct {
 	ServiceAccountName string `yaml:"serviceAccountName"`
+	FSGroup            int64  `yaml:"fsGroup"`
 }
 
 type genericInstanceConfig struct {

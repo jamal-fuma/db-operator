@@ -85,6 +85,7 @@ type AmazonInstance struct {
 	// If it's not defined, above Host will be used as backup host address.
 	BackupHost         string `json:"backupHost"`
 	ServiceAccountName string `json:"serviceAccountName"`
+	FSGroup            int64  `json:"fsGroup,omitempty"`
 }
 
 // DbInstanceBackup defines name of google bucket to use for storing database dumps for backup when backup is enabled

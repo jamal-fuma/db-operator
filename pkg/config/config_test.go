@@ -19,6 +19,9 @@ func TestLoadConfig(t *testing.T) {
 	confStatic.Instances.Amazon.ServiceAccountName = "backup"
 	assert.Equal(t, confStatic.Instances.Amazon.ServiceAccountName, confLoad.Instances.Amazon.ServiceAccountName, "ServiceAccountName should match")
 
+	confStatic.Instances.Amazon.FSGroup = -1
+	assert.Equal(t, confStatic.Instances.Amazon.FSGroup, confLoad.Instances.Amazon.FSGroup, "FSGroup should match")
+
 }
 
 func TestLoadConfigFailCases(t *testing.T) {

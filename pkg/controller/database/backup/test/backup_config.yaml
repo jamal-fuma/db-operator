@@ -1,6 +1,7 @@
 instance:
   amazon:
     serviceAccountName: "backup"
+    fsGroup: 831
 backup:
   nodeSelector: {}
   postgres:
