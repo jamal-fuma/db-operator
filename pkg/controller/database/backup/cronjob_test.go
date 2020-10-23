@@ -118,7 +118,7 @@ func TestGCSBackupCronAmazonServiceAccountFromConfig(t *testing.T) {
 	dbcr.Name = "TestDB"
 	instance := &kciv1alpha1.DbInstance{}
 	instance.Status.Info = map[string]string{"DB_CONN": "TestConnection", "DB_PORT": "1234"}
-	instance.Spec.Amazon = &kciv1alpha1.AmazonInstance{BackupHost: "slave.test"}
+	instance.Spec.Amazon = &kciv1alpha1.AmazonInstance{BackupHost: "slave.test", FSGroup: -1}
 
 	dbcr.Status.InstanceRef = instance
 	dbcr.Spec.Instance = "staging"
@@ -136,6 +136,11 @@ func TestGCSBackupCronAmazonServiceAccountFromConfig(t *testing.T) {
 	assert.Equal(t, "backup", funcCronObject.Spec.JobTemplate.Spec.Template.Spec.ServiceAccountName)
 	assert.Equal(t, "postgresbackupimage:latest", funcCronObject.Spec.JobTemplate.Spec.Template.Spec.Containers[0].Image)
 
+	securityContext := funcCronObject.Spec.JobTemplate.Spec.Template.Spec.SecurityContext
+	fsGroup := conf.Instances.Amazon.FSGroup
+	checkSecurityContextFSGroupEqualValue(fsGroup, securityContext, t)
+	assert.Equal(t, fsGroup, *funcCronObject.Spec.JobTemplate.Spec.Template.Spec.SecurityContext.FSGroup)
+
 	instance.Spec.Engine = "mysql"
 	funcCronObject, err = GCSBackupCron(dbcr)
 	if err != nil {
@@ -143,6 +148,11 @@ func TestGCSBackupCronAmazonServiceAccountFromConfig(t *testing.T) {
 	}
 
 	assert.Equal(t, "mysqlbackupimage:latest", funcCronObject.Spec.JobTemplate.Spec.Template.Spec.Containers[0].Image)
+
+	securityContext = funcCronObject.Spec.JobTemplate.Spec.Template.Spec.SecurityContext
+	fsGroup = conf.Instances.Amazon.FSGroup
+	checkSecurityContextFSGroupEqualValue(fsGroup, securityContext, t)
+	assert.Equal(t, fsGroup, *funcCronObject.Spec.JobTemplate.Spec.Template.Spec.SecurityContext.FSGroup)
 
 	assert.Equal(t, "backup", funcCronObject.Spec.JobTemplate.Spec.Template.Spec.ServiceAccountName)
 	assert.Equal(t, "TestNS", funcCronObject.Namespace)
@@ -156,8 +166,7 @@ func TestGCSBackupCronAmazonServiceAccountFromInstance(t *testing.T) {
 	dbcr.Name = "TestDB"
 	instance := &kciv1alpha1.DbInstance{}
 	instance.Status.Info = map[string]string{"DB_CONN": "TestConnection", "DB_PORT": "1234"}
-	instance.Spec.Amazon = &kciv1alpha1.AmazonInstance{BackupHost: "slave.test", ServiceAccountName: "backup01"}
-
+	instance.Spec.Amazon = &kciv1alpha1.AmazonInstance{BackupHost: "slave.test", ServiceAccountName: "backup01", FSGroup: 456}
 	dbcr.Status.InstanceRef = instance
 	dbcr.Spec.Instance = "staging"
 	dbcr.Spec.Backup.Cron = "* * * * *"
@@ -171,6 +180,11 @@ func TestGCSBackupCronAmazonServiceAccountFromInstance(t *testing.T) {
 		fmt.Print(err)
 	}
 
+	securityContext := funcCronObject.Spec.JobTemplate.Spec.Template.Spec.SecurityContext
+	fsGroup := instance.Spec.Amazon.FSGroup
+	checkSecurityContextFSGroupEqualValue(fsGroup, securityContext, t)
+	assert.Equal(t, fsGroup, *funcCronObject.Spec.JobTemplate.Spec.Template.Spec.SecurityContext.FSGroup)
+
 	assert.Equal(t, "backup01", funcCronObject.Spec.JobTemplate.Spec.Template.Spec.ServiceAccountName)
 	assert.Equal(t, "postgresbackupimage:latest", funcCronObject.Spec.JobTemplate.Spec.Template.Spec.Containers[0].Image)
 
@@ -181,6 +195,11 @@ func TestGCSBackupCronAmazonServiceAccountFromInstance(t *testing.T) {
 	}
 
 	assert.Equal(t, "mysqlbackupimage:latest", funcCronObject.Spec.JobTemplate.Spec.Template.Spec.Containers[0].Image)
+
+	securityContext = funcCronObject.Spec.JobTemplate.Spec.Template.Spec.SecurityContext
+	fsGroup = instance.Spec.Amazon.FSGroup
+	checkSecurityContextFSGroupEqualValue(fsGroup, securityContext, t)
+	assert.Equal(t, fsGroup, *funcCronObject.Spec.JobTemplate.Spec.Template.Spec.SecurityContext.FSGroup)
 
 	assert.Equal(t, "backup01", funcCronObject.Spec.JobTemplate.Spec.Template.Spec.ServiceAccountName)
 	assert.Equal(t, "TestNS", funcCronObject.Namespace)
