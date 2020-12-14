@@ -27,6 +27,7 @@ type DbInstanceSource struct {
 	Google  *GoogleInstance  `json:"google,omitempty" protobuf:"bytes,1,opt,name=google"`
 	Generic *GenericInstance `json:"generic,omitempty" protobuf:"bytes,2,opt,name=generic"`
 	Percona *PerconaCluster  `json:"percona,omitempty" protobuf:"bytes,3,opt,name=percona"`
+	Amazon  *AmazonInstance  `json:"amazon,omitempty" protobuf:"bytes,4,opt,name=amazon"`
 }
 
 // DbInstanceStatus defines the observed state of DbInstance
@@ -71,6 +72,17 @@ type GenericInstance struct {
 	// Usually slave address for master-slave setup or cluster lb address
 	// If it's not defined, above Host will be used as backup host address.
 	BackupHost string `json:"backupHost"`
+}
+
+// AmazonInstance is used when instance type is amazon
+// and describes necessary informations to use instance
+// amazon instance can be any backend, it must be reachable by described address and port
+type AmazonInstance struct {
+	Generic            GenericInstance `json:",inline"`
+	ServiceAccountName string          `json:"serviceAccountName"`
+	Capacity           string          `json:"capacity"`
+	StorageClassName   string          `json:"storageClassName"`
+	FSGroup            int64           `json:"fsGroup"`
 }
 
 // DbInstanceBackup defines name of google bucket to use for storing database dumps for backup when backup is enabled
@@ -132,11 +144,15 @@ func (dbin *DbInstance) ValidateEngine() error {
 func (dbin *DbInstance) ValidateBackend() error {
 	source := dbin.Spec.DbInstanceSource
 
-	if (source.Google == nil) && (source.Generic == nil) && (source.Percona == nil) {
+	if (source.Google == nil) && (source.Amazon == nil) && (source.Percona == nil) && (source.Generic == nil) {
 		return errors.New("no instance type defined")
 	}
 
 	numSources := 0
+
+	if source.Amazon != nil {
+		numSources++
+	}
 
 	if source.Google != nil {
 		numSources++
@@ -166,6 +182,10 @@ func (dbin *DbInstance) GetBackendType() (string, error) {
 	}
 
 	source := dbin.Spec.DbInstanceSource
+
+	if source.Amazon != nil {
+		return "amazon", nil
+	}
 
 	if source.Google != nil {
 		return "google", nil

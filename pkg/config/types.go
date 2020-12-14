@@ -10,12 +10,20 @@ type Config struct {
 type instanceConfig struct {
 	Google  googleInstanceConfig  `yaml:"google"`
 	Generic genericInstanceConfig `yaml:"generic"`
+	Amazon  amazonInstanceConfig  `yaml:"amazon"`
 	Percona perconaClusterConfig  `yaml:"percona"`
 }
 
 type googleInstanceConfig struct {
 	ClientSecretName string      `yaml:"clientSecretName"`
 	ProxyConfig      proxyConfig `yaml:"proxy"`
+}
+
+type amazonInstanceConfig struct {
+	Capacity           string `yaml:"capacity"`
+	StorageClassName   string `yaml:"storageClassName"`
+	ServiceAccountName string `yaml:"serviceAccountName"`
+	FSGroup            int64  `yaml:"fsGroup"`
 }
 
 type genericInstanceConfig struct {

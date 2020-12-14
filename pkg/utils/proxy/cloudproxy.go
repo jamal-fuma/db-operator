@@ -39,7 +39,7 @@ func (cp *CloudProxy) buildService() (*v1.Service, error) {
 		},
 		Spec: v1.ServiceSpec{
 			Ports: []v1.ServicePort{
-				v1.ServicePort{
+				{
 					Name:     cp.Engine,
 					Protocol: v1.ProtocolTCP,
 					Port:     cp.Port,
@@ -79,7 +79,7 @@ func (cp *CloudProxy) deploymentSpec() (v1apps.DeploymentSpec, error) {
 	}
 
 	volumes := []v1.Volume{
-		v1.Volume{
+		{
 			Name: instanceAccessSecretVolumeName,
 			VolumeSource: v1.VolumeSource{
 				Secret: &v1.SecretVolumeSource{
@@ -132,14 +132,14 @@ func (cp *CloudProxy) container() (v1.Container, error) {
 		},
 		ImagePullPolicy: v1.PullIfNotPresent,
 		Ports: []v1.ContainerPort{
-			v1.ContainerPort{
+			{
 				Name:          "sqlport",
 				ContainerPort: cp.Port,
 				Protocol:      v1.ProtocolTCP,
 			},
 		},
 		VolumeMounts: []v1.VolumeMount{
-			v1.VolumeMount{
+			{
 				Name:      instanceAccessSecretVolumeName,
 				MountPath: "/srv/gcloud/",
 			},
